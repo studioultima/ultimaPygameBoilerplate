@@ -1,0 +1,7 @@
+{
+    "windowCaption": "Ultima Engine",
+    "mainScreenWidth": 1920,
+    "mainScreenHeight": 1080,
+    "framerateLimit" : 60,
+    "downscaleMultiplier" : 2
+}
