@@ -28,3 +28,7 @@ git clone https://github.com/studioultima/ultimaPygameBoilerplate.git
 python3 boot.py
 
 ```
+
+## Attribution
+
+The boilerplate is using "m5x7" a font by Daniel Linssen.
