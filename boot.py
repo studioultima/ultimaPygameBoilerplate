@@ -1,3 +1,4 @@
+from logging import PlaceHolder
 import pygame
 import json
 import operator
@@ -112,12 +113,16 @@ logoImg = pygame.image.load('images/logo.png').convert()
 logoText = m5x7_32.render('Pygame Boilerplate', True, whiteColor)
 logoTextWebsite = m5x7_16.render('studioultima.com', True, whiteColor)
 fadeInScreen = pygame.Surface((renderScreenWidth,renderScreenHeight),pygame.SRCALPHA)
+menuItems = [{'value':'item1','label':'NEW GAME','selected':bool(1)},{'value':'item2','label':'LOAD GAME','selected':bool(0)},{'value':'item3','label':'SETTINGS','selected':bool(0)} ]
+menuPointer = ''
+placeHolder = m5x7_32.render(str(menuPointer) + ' ' + 'placeholder', True, whiteColor)
 
 #game Flags & Variables
 currentScene = 'splashscreen'
 finishedFadeInFlag = bool(0)
 transparencyFadeInScreen = 255
 transparencyTransitionSpeed = 0.1
+
 
 
 #gameLoop
@@ -216,6 +221,36 @@ while True:
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     quit()
+                if event.key == pygame.K_DOWN:
+                    indexFinder = 0
+                    for count, menuElement in enumerate(menuItems):
+                        if menuElement['selected'] == bool(1):
+                            menuElement ['selected'] = bool(0)
+                            indexFinderFailsafe = count + 1
+                            if indexFinderFailsafe > len(menuElement) -1:
+                                indexFinder = 0
+                            else:
+                                indexFinder = count + 1
+                    menuItems[indexFinder]['selected'] = bool(1)
+                if event.key == pygame.K_UP:
+                    indexFinder = 0
+                    for count, menuElement in enumerate(menuItems):
+                        if menuElement['selected'] == bool(1):
+                            menuElement ['selected'] = bool(0)
+                            indexFinderFailsafe = count - 1
+                            if indexFinderFailsafe < 0:
+                                indexFinder = len(menuElement) -1
+                            else:
+                                indexFinder = count - 1
+                    menuItems[indexFinder]['selected'] = bool(1)
+                if event.key == pygame.K_RETURN:
+                    elementSelected = ''
+                    indexFinder = 0
+                    for count, menuElement in enumerate(menuItems):
+                        if menuElement['selected'] == bool(1):
+                            indexFinder = count
+                    elementSelected = menuItems[indexFinder]['value']
+                    print (elementSelected)
             if event.type == pygame.USEREVENT + 0:
                 print ('BootEvent') 
 
@@ -229,10 +264,24 @@ while True:
         overlayScreenStack.append(addToRenderStack(sceneNameWidget,0,0,0))
         overlayScreenStack.append(addToRenderStack(fpsCounter,mainScreenWidth - getWidth(fpsCounter),0,0))
 
-      
-        helloWorld = m5x7_64.render('Hello World', True, whiteColor)
 
-        renderScreenStack.append(addToRenderStack(helloWorld,renderScreenWidth/2 - getWidth(helloWorld)/2 ,renderScreenHeight/2 - getHeight(helloWorld)/2,0))
+
+        
+        spacing = 0
+        for count, itemForRender in enumerate(menuItems):
+            if count > 0:
+                spacing = getHeight(placeHolder) * count
+            if itemForRender['selected']:  
+                menuPointer = '>'
+            else:
+                menuPointer = ''  
+            item = m5x7_32.render(str(menuPointer) + ' ' + str(itemForRender['label']), True, whiteColor)
+            renderScreenStack.append(addToRenderStack(item,renderScreenWidth/2 - getWidth(item)/2 ,renderScreenHeight/2 - getHeight(item)/2 + spacing,0))
+            
+
+
+
+
 
     
         #-------------------------------
@@ -240,4 +289,6 @@ while True:
     currentScene = nextScene
 
     runRender(renderScreenStack,overlayScreenStack)
+
+
 
