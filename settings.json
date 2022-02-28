@@ -3,5 +3,6 @@
     "mainScreenWidth": 1920,
     "mainScreenHeight": 1080,
     "framerateLimit" : 60,
-    "downscaleMultiplier" : 2
+    "downscaleMultiplier" : 2,
+    "windowMode" : "resizable"
 }

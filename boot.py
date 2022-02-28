@@ -76,12 +76,19 @@ mainScreenWidth     = getSettingsJSON()['mainScreenWidth']
 mainScreenHeight    = getSettingsJSON()['mainScreenHeight']
 windowCaption       = getSettingsJSON()['windowCaption']
 downscaleMultiplier = getSettingsJSON()['downscaleMultiplier']
+windowMode          = getSettingsJSON()['windowMode']
 
 #mainScreen
 icon = pygame.image.load('images/logo.png')
 pygame.display.set_icon(icon)
 pygame.display.set_caption(windowCaption)
-mainScreen = pygame.display.set_mode((mainScreenWidth,mainScreenHeight),pygame.RESIZABLE)
+
+if windowMode == "resizable":
+    mainScreen = pygame.display.set_mode((mainScreenWidth,mainScreenHeight),pygame.RESIZABLE)
+elif windowMode == "fullscreen":
+    mainScreen = pygame.display.set_mode((mainScreenWidth,mainScreenHeight),pygame.FULLSCREEN)
+else:
+    mainScreen = pygame.display.set_mode((mainScreenWidth,mainScreenHeight))
 
 #renderScreen
 renderScreenWidth  = mainScreenWidth  / downscaleMultiplier
@@ -114,13 +121,15 @@ helloworldText = m5x7_32.render('Hello World!', True, whiteColor)
 logoTextWebsite = m5x7_16.render('studioultima.com', True, whiteColor)
 fadeInScreen = pygame.Surface((renderScreenWidth,renderScreenHeight),pygame.SRCALPHA)
 menuItems = [{'value':'newgame','label':'NEW GAME','selected':bool(1)},{'value':'continue','label':'CONTINUE','selected':bool(0)},{'value':'settings','label':'SETTINGS','selected':bool(0)},{'value':'exit','label':'EXIT','selected':bool(0)}]
-settingsMenuItems = [{'value':'fpsChange','label':'Max Fps: ' + str(framerateLimit),'selected':bool(1)},{'value':'save','label':'Save changes','selected':bool(0)},{'value':'mainMenu','label':'Go back to the main menu','selected':bool(0)}]
-fpsChangeSubMenuItems = [{'value':getSettingsJSON()['framerateLimit'],'label':'Default('+ str(getSettingsJSON()['framerateLimit']) + ' Fps)','selected':bool(1)},{'value':30,'label':'30 Fps','selected':bool(0)}, {'value':60,'label':'60 Fps','selected':bool(0)}]
+settingsMenuItems = [{'value':'windowMode','label':'Window Mode: default (' + str(windowMode) +')','selected':bool(1)},{'value':'fpsChange','label':'Limit FPS: default (' + str(framerateLimit) +')','selected':bool(0)},{'value':'save','label':'Save changes','selected':bool(0)},{'value':'mainMenu','label':'Go back to the main menu','selected':bool(0)}]
+windowModeSubMenuItems = [{'value':getSettingsJSON()['windowMode'],'label':'Window Mode: ' + str(getSettingsJSON()['windowMode']) + ' (default)','selected':bool(1)},{'value':'fullscreen','label':'Window Mode: fullscreen','selected':bool(0)}, {'value':'resizable','label':'Window Mode: resizable','selected':bool(0)},{'value':'normal','label':'Window Mode: normal','selected':bool(0)}]
+fpsChangeSubMenuItems = [{'value':getSettingsJSON()['framerateLimit'],'label':'Limit FPS: '+ str(getSettingsJSON()['framerateLimit']) + ' (default)','selected':bool(1)},{'value':30,'label':'Limit FPS: 30 Fps','selected':bool(0)}, {'value':60,'label':'Limit FPS: 60 Fps','selected':bool(0)}]
 menuPointer = ''
 placeHolder = m5x7_32.render(str(menuPointer) + ' ' + 'placeholder', True, whiteColor)
 
 #game Flags & Variables
 settingDummyFpsLimit = framerateLimit
+settingDummyWindowMode = windowMode
 currentScene = 'splashscreen'
 finishedFadeInFlag = bool(0)
 transparencyFadeInScreen = 255
@@ -150,8 +159,7 @@ while True:
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    quit()
+                    pass
                 if event.key == pygame.K_RETURN:
                     nextScene = 'mainMenu'  
                     startSceneTicks = pygame.time.get_ticks()
@@ -222,8 +230,7 @@ while True:
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    quit()
+                    pass
                 if event.key == pygame.K_DOWN:
                     indexFinder = 0
                     for count, menuElement in enumerate(menuItems):
@@ -311,8 +318,8 @@ while True:
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    quit()
+                    nextScene = 'mainMenu'  
+                    startSceneTicks = pygame.time.get_ticks()
                 if event.key == pygame.K_DOWN:
                     indexFinder = 0
                     for count, menuElement in enumerate(settingsMenuItems):
@@ -348,6 +355,14 @@ while True:
                         quit()
                     elif elementSelected == 'save':
                         framerateLimit = settingDummyFpsLimit
+                        windowMode = settingDummyWindowMode
+                        if windowMode == "resizable":
+                            mainScreen = pygame.display.set_mode((mainScreenWidth,mainScreenHeight),pygame.RESIZABLE)
+                        elif windowMode == "fullscreen":
+                            mainScreen = pygame.display.set_mode((mainScreenWidth,mainScreenHeight),pygame.FULLSCREEN)
+                        else:
+                            mainScreen = pygame.display.set_mode((mainScreenWidth,mainScreenHeight))
+
 
                     elif elementSelected == 'fpsChange':
                         indexFinder = 0
@@ -373,11 +388,32 @@ while True:
                                 indexFinder = count
                         settingsMenuItems[indexFinder]['label'] = elementSelected['label']
                         settingDummyFpsLimit = elementSelected['value']
+                    #------
+                    elif elementSelected == 'windowMode':
+                        indexFinder = 0
+                        for count, menuElement in enumerate(windowModeSubMenuItems):
+                            if menuElement['selected'] == bool(1):
+                                menuElement ['selected'] = bool(0)
+                                indexFinderFailsafe = count + 1
+                                if indexFinderFailsafe > len(windowModeSubMenuItems) -1:
+                                    indexFinder = 0
+                                else:
+                                    indexFinder = count + 1
+                        windowModeSubMenuItems[indexFinder]['selected'] = bool(1)
+                        elementSelected = ''
+                        indexFinder = 0
+                        for count, menuElement in enumerate(windowModeSubMenuItems):
+                            if menuElement['selected'] == bool(1):
+                                indexFinder = count
+                        elementSelected = windowModeSubMenuItems[indexFinder]
+                        #---
+                        indexFinder = 0
+                        for count, menuElement in enumerate(settingsMenuItems):
+                            if menuElement['value'] == 'windowMode':
+                                indexFinder = count
+                        settingsMenuItems[indexFinder]['label'] = elementSelected['label']
+                        settingDummyWindowMode = elementSelected['value']
                     
-
-
-
-
 
 
                     elif elementSelected == 'mainMenu':
@@ -430,8 +466,7 @@ while True:
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    quit()    
+                    pass
             if event.type == pygame.USEREVENT + 0:
                 print ('BootEvent') 
 
@@ -466,8 +501,7 @@ while True:
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    quit()    
+                    pass
             if event.type == pygame.USEREVENT + 0:
                 print ('BootEvent') 
 
