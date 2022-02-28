@@ -111,13 +111,17 @@ m5x7_64 = pygame.font.Font('fonts/m5x7.ttf',64)
 #static game elements
 logoImg = pygame.image.load('images/logo.png').convert()
 logoText = m5x7_32.render('Pygame Boilerplate', True, whiteColor)
+helloworldText = m5x7_32.render('Hello World!', True, whiteColor)
 logoTextWebsite = m5x7_16.render('studioultima.com', True, whiteColor)
 fadeInScreen = pygame.Surface((renderScreenWidth,renderScreenHeight),pygame.SRCALPHA)
-menuItems = [{'value':'item1','label':'NEW GAME','selected':bool(1)},{'value':'item2','label':'LOAD GAME','selected':bool(0)},{'value':'item3','label':'SETTINGS','selected':bool(0)} ]
+menuItems = [{'value':'newgame','label':'NEW GAME','selected':bool(1)},{'value':'continue','label':'CONTINUE','selected':bool(0)},{'value':'settings','label':'SETTINGS','selected':bool(0)},{'value':'exit','label':'EXIT','selected':bool(0)}]
+settingsMenuItems = [{'value':'fpsChange','label':'Max Fps: ' + str(framerateLimit),'selected':bool(1)},{'value':'save','label':'Save changes','selected':bool(0)},{'value':'mainMenu','label':'Go back to the main menu','selected':bool(0)}]
+fpsChangeSubMenuItems = [{'value':getSettingsJSON()['framerateLimit'],'label':'Default('+ str(getSettingsJSON()['framerateLimit']) + ' Fps)','selected':bool(1)},{'value':30,'label':'30 Fps','selected':bool(0)}, {'value':60,'label':'60 Fps','selected':bool(0)}]
 menuPointer = ''
 placeHolder = m5x7_32.render(str(menuPointer) + ' ' + 'placeholder', True, whiteColor)
 
 #game Flags & Variables
+settingDummyFpsLimit = framerateLimit
 currentScene = 'splashscreen'
 finishedFadeInFlag = bool(0)
 transparencyFadeInScreen = 255
@@ -150,7 +154,7 @@ while True:
                     pygame.quit()
                     quit()
                 if event.key == pygame.K_RETURN:
-                    nextScene = 'helloworld'  
+                    nextScene = 'mainMenu'  
                     startSceneTicks = pygame.time.get_ticks()
             if event.type == pygame.USEREVENT + 0:
                 print ('BootEvent') 
@@ -167,7 +171,7 @@ while True:
         overlayScreenStack.append(addToRenderStack(sceneTimeWidget,0,0 + getHeight(sceneNameWidget),0))
         overlayScreenStack.append(addToRenderStack(fpsCounter,mainScreenWidth - getWidth(fpsCounter),0,0))
 
-        if getCurrentSeconds(startSceneTicks) > 1 :
+        if getCurrentSeconds(startSceneTicks) > 0 :
             if finishedFadeInFlag == bool(0):
                 if transparencyFadeInScreen > 0:
                     failsafePrediction = transparencyFadeInScreen - (transparencyTransitionSpeed * framerateMultiplier)
@@ -193,7 +197,7 @@ while True:
 
         
         if getCurrentSeconds(startSceneTicks) > 11 :
-            nextScene = 'helloworld'  
+            nextScene = 'mainMenu'  
             startSceneTicks = pygame.time.get_ticks()
 
         
@@ -204,11 +208,11 @@ while True:
 
         #-------------------------------
 
-    elif currentScene == 'helloworld':
+    elif currentScene == 'mainMenu':
 
         #-------------------------------
-        sceneName = 'Hello World'
-        nextScene = 'helloworld'
+        sceneName = 'Main Menu'
+        nextScene = 'mainMenu'
 
         for event in pygame.event.get():
             #debug events
@@ -227,7 +231,7 @@ while True:
                         if menuElement['selected'] == bool(1):
                             menuElement ['selected'] = bool(0)
                             indexFinderFailsafe = count + 1
-                            if indexFinderFailsafe > len(menuElement) -1:
+                            if indexFinderFailsafe > len(menuItems) -1:
                                 indexFinder = 0
                             else:
                                 indexFinder = count + 1
@@ -239,7 +243,7 @@ while True:
                             menuElement ['selected'] = bool(0)
                             indexFinderFailsafe = count - 1
                             if indexFinderFailsafe < 0:
-                                indexFinder = len(menuElement) -1
+                                indexFinder = len(menuItems) -1
                             else:
                                 indexFinder = count - 1
                     menuItems[indexFinder]['selected'] = bool(1)
@@ -250,7 +254,19 @@ while True:
                         if menuElement['selected'] == bool(1):
                             indexFinder = count
                     elementSelected = menuItems[indexFinder]['value']
-                    print (elementSelected)
+                    # if elementSelected == something:
+                    if elementSelected == 'exit':
+                        pygame.quit()
+                        quit()
+                    elif elementSelected == 'newgame':
+                        nextScene = 'newgame'  
+                        startSceneTicks = pygame.time.get_ticks()
+                    elif elementSelected == 'continue':
+                        nextScene = 'continue'  
+                        startSceneTicks = pygame.time.get_ticks()
+                    elif elementSelected == 'settings':
+                        nextScene = 'settings'  
+                        startSceneTicks = pygame.time.get_ticks()
             if event.type == pygame.USEREVENT + 0:
                 print ('BootEvent') 
 
@@ -274,16 +290,202 @@ while True:
             if itemForRender['selected']:  
                 menuPointer = '>'
             else:
-                menuPointer = ''  
+                menuPointer = ' '  
+            item = m5x7_32.render(str(menuPointer) + ' ' + str(itemForRender['label']), True, whiteColor)
+            renderScreenStack.append(addToRenderStack(item,renderScreenWidth/2 - getWidth(item)/2 ,renderScreenHeight/2 - getHeight(item)/2 + spacing,0))
+            
+
+        #-------------------------------
+
+    elif currentScene == 'settings':
+
+        #-------------------------------
+        sceneName = 'Setting Screen'
+        nextScene = 'settings'
+
+        for event in pygame.event.get():
+            #debug events
+            #print (event)
+            #Quitting the game
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    quit()
+                if event.key == pygame.K_DOWN:
+                    indexFinder = 0
+                    for count, menuElement in enumerate(settingsMenuItems):
+                        if menuElement['selected'] == bool(1):
+                            menuElement ['selected'] = bool(0)
+                            indexFinderFailsafe = count + 1
+                            if indexFinderFailsafe > len(settingsMenuItems) -1:
+                                indexFinder = 0
+                            else:
+                                indexFinder = count + 1
+                    settingsMenuItems[indexFinder]['selected'] = bool(1)
+                if event.key == pygame.K_UP:
+                    indexFinder = 0
+                    for count, menuElement in enumerate(settingsMenuItems):
+                        if menuElement['selected'] == bool(1):
+                            menuElement ['selected'] = bool(0)
+                            indexFinderFailsafe = count - 1
+                            if indexFinderFailsafe < 0:
+                                indexFinder = len(settingsMenuItems) -1
+                            else:
+                                indexFinder = count - 1
+                    settingsMenuItems[indexFinder]['selected'] = bool(1)
+                if event.key == pygame.K_RETURN:
+                    elementSelected = ''
+                    indexFinder = 0
+                    for count, menuElement in enumerate(settingsMenuItems):
+                        if menuElement['selected'] == bool(1):
+                            indexFinder = count
+                    elementSelected = settingsMenuItems[indexFinder]['value']
+                    # if elementSelected == something:
+                    if elementSelected == 'exit':
+                        pygame.quit()
+                        quit()
+                    elif elementSelected == 'save':
+                        framerateLimit = settingDummyFpsLimit
+
+                    elif elementSelected == 'fpsChange':
+                        indexFinder = 0
+                        for count, menuElement in enumerate(fpsChangeSubMenuItems):
+                            if menuElement['selected'] == bool(1):
+                                menuElement ['selected'] = bool(0)
+                                indexFinderFailsafe = count + 1
+                                if indexFinderFailsafe > len(fpsChangeSubMenuItems) -1:
+                                    indexFinder = 0
+                                else:
+                                    indexFinder = count + 1
+                        fpsChangeSubMenuItems[indexFinder]['selected'] = bool(1)
+                        elementSelected = ''
+                        indexFinder = 0
+                        for count, menuElement in enumerate(fpsChangeSubMenuItems):
+                            if menuElement['selected'] == bool(1):
+                                indexFinder = count
+                        elementSelected = fpsChangeSubMenuItems[indexFinder]
+                        #---
+                        indexFinder = 0
+                        for count, menuElement in enumerate(settingsMenuItems):
+                            if menuElement['value'] == 'fpsChange':
+                                indexFinder = count
+                        settingsMenuItems[indexFinder]['label'] = elementSelected['label']
+                        settingDummyFpsLimit = elementSelected['value']
+                    
+
+
+
+
+
+
+                    elif elementSelected == 'mainMenu':
+                        nextScene = 'mainMenu'  
+                        startSceneTicks = pygame.time.get_ticks()
+                    
+            if event.type == pygame.USEREVENT + 0:
+                print ('BootEvent') 
+
+        
+        renderScreenStack =  []
+        overlayScreenStack = []
+
+        fpsCounter = m5x7_32.render('FPS: ' + str(round(clockFramerate.get_fps())), True, whiteColor)
+        sceneNameWidget = m5x7_32.render('Scene: ' + str(sceneName), True, whiteColor)
+
+        overlayScreenStack.append(addToRenderStack(sceneNameWidget,0,0,0))
+        overlayScreenStack.append(addToRenderStack(fpsCounter,mainScreenWidth - getWidth(fpsCounter),0,0))
+
+
+        
+        spacing = 0
+        for count, itemForRender in enumerate(settingsMenuItems):
+            if count > 0:
+                spacing = getHeight(placeHolder) * count
+            if itemForRender['selected']:  
+                menuPointer = '>'
+            else:
+                menuPointer = ' '  
             item = m5x7_32.render(str(menuPointer) + ' ' + str(itemForRender['label']), True, whiteColor)
             renderScreenStack.append(addToRenderStack(item,renderScreenWidth/2 - getWidth(item)/2 ,renderScreenHeight/2 - getHeight(item)/2 + spacing,0))
             
 
 
-
-
-
     
+        #-------------------------------
+
+    elif currentScene == 'newgame':
+
+        #-------------------------------
+        sceneName = 'New game scene'
+        nextScene = 'newgame'
+
+        for event in pygame.event.get():
+            #debug events
+            #print (event)
+            #Quitting the game
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    quit()    
+            if event.type == pygame.USEREVENT + 0:
+                print ('BootEvent') 
+
+        
+        renderScreenStack =  []
+        overlayScreenStack = []
+
+        fpsCounter = m5x7_32.render('FPS: ' + str(round(clockFramerate.get_fps())), True, whiteColor)
+        sceneNameWidget = m5x7_32.render('Scene: ' + str(sceneName), True, whiteColor)
+
+        overlayScreenStack.append(addToRenderStack(sceneNameWidget,0,0,0))
+        overlayScreenStack.append(addToRenderStack(fpsCounter,mainScreenWidth - getWidth(fpsCounter),0,0))
+
+
+        renderScreenStack.append(addToRenderStack(helloworldText,renderScreenWidth/2 - getWidth(helloworldText)/2 ,renderScreenHeight/2 - getHeight(helloworldText)/2 ,0))
+
+        
+        #-------------------------------
+
+    elif currentScene == 'continue':
+
+        #-------------------------------
+        sceneName = 'Continue game scene'
+        nextScene = 'continue'
+
+        for event in pygame.event.get():
+            #debug events
+            #print (event)
+            #Quitting the game
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    quit()    
+            if event.type == pygame.USEREVENT + 0:
+                print ('BootEvent') 
+
+        
+        renderScreenStack =  []
+        overlayScreenStack = []
+
+        fpsCounter = m5x7_32.render('FPS: ' + str(round(clockFramerate.get_fps())), True, whiteColor)
+        sceneNameWidget = m5x7_32.render('Scene: ' + str(sceneName), True, whiteColor)
+
+        overlayScreenStack.append(addToRenderStack(sceneNameWidget,0,0,0))
+        overlayScreenStack.append(addToRenderStack(fpsCounter,mainScreenWidth - getWidth(fpsCounter),0,0))
+
+
+        renderScreenStack.append(addToRenderStack(helloworldText,renderScreenWidth/2 - getWidth(helloworldText)/2 ,renderScreenHeight/2 - getHeight(helloworldText)/2 ,0))
+
+        
         #-------------------------------
 
     currentScene = nextScene
